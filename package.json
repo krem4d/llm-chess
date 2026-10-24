@@ -1,0 +1,17 @@
+{
+  "name": "llm-chess",
+  "version": "1.0.0",
+  "description": "Play chess against Claude and Codex models, or let them play each other",
+  "scripts": {
+    "test": "node --test",
+    "start": "node server.js"
+  },
+  "type": "module",
+  "dependencies": {
+    "chess.js": "^1.4.0"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  }
+}

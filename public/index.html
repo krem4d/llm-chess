@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLM Chess</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-first" viewBox="0 0 24 24"><path d="m11 17-5-5 5-5M18 17l-5-5 5-5"/></symbol>
+      <symbol id="i-prev" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+      <symbol id="i-next" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+      <symbol id="i-last" viewBox="0 0 24 24"><path d="m6 17 5-5-5-5M13 17l5-5-5-5"/></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z"/></symbol>
+      <symbol id="i-flip" viewBox="0 0 24 24"><path d="m21 16-4 4-4-4M17 20V4M3 8l4-4 4 4M7 4v16"/></symbol>
+      <symbol id="i-sound" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4zM15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></symbol>
+      <symbol id="i-mute" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4zM22 9l-6 6M16 9l6 6"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></symbol>
+      <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h18M12 3v18"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="top">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">LLM Chess</span>
+    </div>
+    <p id="matchup" class="matchup"></p>
+    <div class="top-actions">
+      <div class="theme-picker">
+        <button id="theme-btn" class="icon-btn" aria-haspopup="true" aria-expanded="false" title="Theme">
+          <span id="theme-swatch" class="swatch" aria-hidden="true"></span>
+        </button>
+        <div id="theme-menu" class="theme-menu" role="menu" hidden></div>
+      </div>
+      <button id="sound" class="icon-btn" title="Sound"><svg><use href="#i-sound"/></svg></button>
+      <button id="flip" class="icon-btn" title="Flip board (F)"><svg><use href="#i-flip"/></svg></button>
+      <button id="open-setup" class="btn primary"><svg><use href="#i-plus"/></svg>New game</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <aside class="feed" id="feed-w" aria-label="White's replies"></aside>
+
+    <section class="center">
+      <div class="bar" id="bar-top"></div>
+
+      <div class="board-wrap">
+        <div id="setup-banner" class="setup-banner" hidden>
+          <span>Play the opening moves for both sides</span>
+          <div class="banner-actions">
+            <button id="setup-undo" class="btn ghost small"><svg><use href="#i-undo"/></svg>Undo</button>
+            <button id="setup-back" class="btn ghost small">Back</button>
+            <button id="setup-start" class="btn primary small">Start from here</button>
+          </div>
+        </div>
+        <div id="board" class="board" aria-label="Chess board">
+          <div class="squares"></div>
+          <svg class="arrows" viewBox="0 0 8 8" aria-hidden="true"></svg>
+          <div id="promo" class="promo" hidden></div>
+          <div id="overlay" class="overlay" hidden></div>
+        </div>
+      </div>
+
+      <div class="bar" id="bar-bottom"></div>
+
+      <div class="controls">
+        <div class="nav" role="group" aria-label="Review moves">
+          <button class="icon-btn" data-nav="first" title="First move (Home)"><svg><use href="#i-first"/></svg></button>
+          <button class="icon-btn" data-nav="prev" title="Previous move (←)"><svg><use href="#i-prev"/></svg></button>
+          <button class="icon-btn" data-nav="next" title="Next move (→)"><svg><use href="#i-next"/></svg></button>
+          <button class="icon-btn" data-nav="last" title="Latest move (End)"><svg><use href="#i-last"/></svg></button>
+        </div>
+        <div class="nav">
+          <button id="pause" class="btn ghost" disabled><svg><use href="#i-pause"/></svg><span>Pause</span></button>
+          <button id="pgn" class="icon-btn" title="Copy PGN"><svg><use href="#i-copy"/></svg></button>
+        </div>
+      </div>
+
+      <ol id="moves" class="moves" aria-label="Moves"></ol>
+    </section>
+
+    <aside class="feed" id="feed-b" aria-label="Black's replies"></aside>
+  </main>
+
+  <div id="scrim" class="scrim" hidden></div>
+  <aside id="setup" class="drawer" aria-label="New game" aria-hidden="true">
+    <header class="drawer-head">
+      <h2>New game</h2>
+      <button id="close-setup" class="icon-btn" title="Close (Esc)"><svg><use href="#i-close"/></svg></button>
+    </header>
+
+    <div class="drawer-body">
+      <div id="seats" class="seats"></div>
+
+      <section class="group">
+        <h3>Opening</h3>
+        <p class="hint">Start from the first move, pick an opening, or type moves.</p>
+        <div id="openings" class="chips"></div>
+        <textarea id="opening-moves" rows="2" spellcheck="false" placeholder="e.g. 1. e4 c5 2. Nf3 d6"></textarea>
+        <p id="opening-error" class="error" hidden></p>
+        <button id="setup-on-board" class="btn ghost wide"><svg><use href="#i-board"/></svg>Play the opening on the board</button>
+      </section>
+    </div>
+
+    <footer class="drawer-foot">
+      <button id="start" class="btn primary wide big">Start game</button>
+    </footer>
+  </aside>
+
+  <template id="seat-tpl">
+    <section class="group seat">
+      <h3><span class="disc"></span><span class="seat-name"></span></h3>
+      <div class="segmented" data-k="engine" role="radiogroup">
+        <button type="button" data-v="human">Human</button>
+        <button type="button" data-v="claude">Claude</button>
+        <button type="button" data-v="codex">Codex</button>
+      </div>
+      <div class="ai-only">
+        <label class="field">Model <select data-k="model"></select></label>
+        <label class="field">Effort <select data-k="effort"></select></label>
+        <div class="segmented small" data-k="vision" role="radiogroup">
+          <button type="button" data-v="image">Board image</button>
+          <button type="button" data-v="blind">Blindfold</button>
+        </div>
+      </div>
+    </section>
+  </template>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
